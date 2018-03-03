@@ -14,6 +14,7 @@ a triangular matrix and back sub-
 stitution.
 */
 
+#define _BSD_SOURCE 1
 #define _XOPEN_SOURCE 1
 
 #include <stdio.h>
@@ -226,6 +227,20 @@ int main(int argc, char **argv, char **environ) {
         fprintf(stdout, "Backwards Substitution\n");
         dump(A, b, x, n);
     }
+
+    omp_sched_t sch;
+    int chunk;
+    omp_get_schedule(&sch, &chunk);
+    char buf[BUFSIZ];
+    if (sch == omp_sched_static){
+        sprintf(buf, "static-%d", chunk);
+    }else if (sch == omp_sched_dynamic){
+        sprintf(buf, "dynamic-%d", chunk);
+    }else{
+        sprintf(buf, "guided-%d", chunk);
+    }
+
+    fprintf(stdout, "n: %d, t: %d, schedule: %s, ", n, t, buf);
 
     fprintf(stdout, "triangulate(sec): %d.%06d, ",\
         (unsigned int)(t_tv.tv_sec),\
