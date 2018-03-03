@@ -1,0 +1,5 @@
+*.pdf
+*.sublime*
+cmake*/
+.idea/*
+a2
