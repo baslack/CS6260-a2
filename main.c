@@ -51,19 +51,22 @@ void triangulate(double A[], double b[], double x[], int n) {
     int j = 0;
     int k = 0;
     double multiple = 0.0;
+#pragma omp parallel num_threads(t)\
+    default(shared)\
+    private(i,j,k)
     {
         for (i = 0; i < n; i++) {
             // for each subsequent row
             for (j = i + 1; j < n; j++) {
                 // calculate the multiple required
-                multiple = ACCESS2D(A, j, i, n) / ACCESS2D(A, i, i, n);
-                b[j] = b[j] - b[i] * multiple;
+                #pragma omp single
+                {
+                    multiple = ACCESS2D(A, j, i, n) / ACCESS2D(A, i, i, n);
+                    b[j] = b[j] - b[i] * multiple;
+                }
                 // eliminate the component for the col
-#pragma omp parallel for num_threads(t)\
-    schedule(runtime)\
-    default(none)\
-    shared(A, b, x, n, i, j, multiple)\
-    private(k)
+#pragma omp for\
+    schedule(runtime)
                 for (k = i; k < n; k++) {
                     ACCESS2D(A, j, k, n) = ACCESS2D(A, j, k, n) - ACCESS2D(A, i, k, n) * multiple;
                 }
@@ -80,13 +83,13 @@ void backsub(double A[], double b[], double x[], int n){
     int j = 0;
     double temp;
 
+#pragma omp parallel num_threads(t)\
+    default(shared)\
+    private(i,j)
     for (i = (n-1); i >= 0; i--){
         temp = 0.0;
-#pragma omp parallel for num_threads(t)\
+#pragma omp parallel for\
         schedule(runtime)\
-        default(none)\
-        shared(A, b, x, n, i, stderr)\
-        private(j)\
         reduction(+:temp)
         for ( j = (n-1); j >= i; j-- ){
             temp += (i == (n-1)) ? 0 : x[j+1] * ACCESS2D(A, i, j+1, n);
