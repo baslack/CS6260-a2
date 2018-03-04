@@ -1,6 +1,6 @@
 #!/bin/sh -login
 #PBS -l mem=1024mb
-#PBS -l walltime=00:30:00
+#PBS -l walltime=99:99:99
 #PBS -j oe
 
 #automatically calculate the number of cores
