@@ -87,14 +87,17 @@ void backsub(double A[], double b[], double x[], int n){
     default(shared)\
     private(i,j)
     for (i = (n-1); i >= 0; i--){
-        temp = 0.0;
-#pragma omp parallel for\
+        #pragma omp for\
         schedule(runtime)\
         reduction(+:temp)
         for ( j = (n-1); j >= i; j-- ){
             temp += (i == (n-1)) ? 0 : x[j+1] * ACCESS2D(A, i, j+1, n);
         }
-        x[i] = (b[i]-temp)/ACCESS2D(A, i, i, n);
+        #pragma omp single
+        {
+            x[i] = (b[i]-temp)/ACCESS2D(A, i, i, n);
+            temp = 0;
+        }
     }
 }
 
