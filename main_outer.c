@@ -52,29 +52,26 @@ void triangulate(double A[], double b[], double x[], int n) {
     int j = 0;
     int k = 0;
     double multiple = 0.0;
-#pragma omp parallel num_threads(t)\
-    default(shared)\
-    private(i,j,k)
-    {
         for (i = 0; i < n; i++) {
             // for each subsequent row
+#pragma omp parallel for num_threads(t)\
+    default(shared)\
+    private(j,k, multiple)\
+    schedule(runtime)
             for (j = i + 1; j < n; j++) {
                 // calculate the multiple required
-                #pragma omp single
                 {
                     multiple = ACCESS2D(A, j, i, n) / ACCESS2D(A, i, i, n);
                     b[j] = b[j] - b[i] * multiple;
                 }
                 // eliminate the component for the col
-#pragma omp for\
-    schedule(runtime)
                 for (k = i; k < n; k++) {
                     ACCESS2D(A, j, k, n) = ACCESS2D(A, j, k, n) - ACCESS2D(A, i, k, n) * multiple;
                 }
 
             }
         }
-    }
+    
 } // end triangulate
 
 void backsub(double A[], double b[], double x[], int n){

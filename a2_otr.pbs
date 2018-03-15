@@ -1,0 +1,12 @@
+#!/bin/sh -login
+#PBS -l mem=1024mb
+#PBS -l walltime=99:99:99
+#PBS -j oe
+
+#automatically calculate the number of cores
+NP=$(cat ${PBS_NODEFILE} | wc -l)
+
+#cd into our working directory
+cd ~/CS6260/a2
+
+./a2_otr $1 $2 $3 $4 $5 $6;
